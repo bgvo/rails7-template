@@ -7,9 +7,14 @@ require "shellwords"
 # invoked remotely via HTTP, that means the files are not present locally.
 # # In that case, use `git clone` to download them to a local temporary dir.
 def add_template_repository_to_source_path
+  puts "IS THIS WORKING?: #{__FILE__}"
+  sleep 5
   if __FILE__ =~ %r{\Ahttps?://}
+    puts "Ok, it's working"
     require "tmpdir"
     source_paths.unshift(tempdir = Dir.mktmpdir("rails7template"))
+    puts "Supposedly, tempdir is: #{tempdir}"
+    sleep 5
     at_exit { FileUtils.remove_entry(tempdir) }
     git clone: [
       "--quiet",
@@ -116,13 +121,6 @@ def add_authorization
   generate "pundit:install"
 end
 
-def default_to_esbuild
-  return if options[:javascript] == "esbuild"
-  unless options[:skip_javascript]
-    @options = options.merge(javascript: "esbuild")
-  end
-end
-
 def add_files
   create_file "Procfile", <<~YAML
                 web: bundle exec rails server
@@ -225,6 +223,7 @@ end
 add_gems
 
 after_bundle do
+  add_template_repository_to_source_path
   set_application_name
   add_users
   add_authorization
