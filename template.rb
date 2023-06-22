@@ -7,13 +7,10 @@ require "shellwords"
 # invoked remotely via HTTP, that means the files are not present locally.
 # # In that case, use `git clone` to download them to a local temporary dir.
 def add_template_repository_to_source_path
-  puts "IS THIS WORKING?: #{__FILE__}"
   sleep 5
   if __FILE__ =~ %r{\Ahttps?://}
-    puts "Ok, it's working"
     require "tmpdir"
     source_paths.unshift(tempdir = Dir.mktmpdir("rails7template"))
-    puts "Supposedly, tempdir is: #{tempdir}"
     sleep 5
     at_exit { FileUtils.remove_entry(tempdir) }
     git clone: [
@@ -189,6 +186,7 @@ def add_sitemap
 end
 
 def add_haml
+  ENV["HAML_RAILS_DELETE_ERB"] = "true"
   rails_command "haml:erb2haml"
 end
 
@@ -216,7 +214,7 @@ def gem_exists?(name)
 end
 
 unless rails_6_or_newer?
-  puts "Please use Rails 6.0 or newer to create a Jumpstart application"
+  puts "Please use Rails 6.0 or newer to create a Startapp application"
 end
 
 # Main setup
@@ -234,7 +232,7 @@ after_bundle do
   add_whenever
   add_sitemap
   add_overmind
-  add_files
+  # add_files
   add_haml
   rails_command "active_storage:install"
 
@@ -256,16 +254,9 @@ after_bundle do
   end
 
   say
-  say "Jumpstart app successfully created!", :blue
+  say "App successfully created!", :blue
   say
   say "To get started with your new app:", :green
   say "  cd #{original_app_name}"
-  say
-  say "  # Update config/database.yml with your database credentials"
-  say
-  say "  rails db:create"
-  say "  rails g noticed:model"
-  say "  rails db:migrate"
-  say "  rails generate administrate:install # Generate admin dashboards"
   say "  bin/dev"
 end
