@@ -124,6 +124,7 @@ def add_files
                 worker: bundle exec sidekiq
               YAML
 
+  remove_file "Procfile.dev"
   create_file "Procfile.dev", <<~YAML
                 web: bundle exec rails server -p 3000
                 worker: bundle exec sidekiq
@@ -201,6 +202,30 @@ def add_overmind
   create_file "bin/dev", <<~SH
                 #!/usr/bin/env sh
 
+                # Check if Overmind is installed
+                if ! command -v overmind &> /dev/null; then
+                  echo "Overmind is not installed. Installing Overmind..."
+
+                  # Install Overmind based on the package manager available
+                  if command -v brew &> /dev/null; then
+                      echo "Using Homebrew to install Overmind..."
+                      brew install overmind
+                  elif command -v apt-get &> /dev/null; then
+                      echo "Using APT to install Overmind..."
+                      sudo apt-get install -y overmind
+                  elif command -v yum &> /dev/null; then
+                      echo "Using Yum to install Overmind..."
+                      sudo yum install -y overmind
+                  elif command -v pacman &> /dev/null; then
+                      echo "Using Pacman to install Overmind..."
+                      sudo pacman -Syu overmind --noconfirm
+                  else
+                      echo "Package manager not found. Please install Overmind manually."
+                      exit 1
+                  fi
+
+                  echo "Overmind has been installed."
+                fi
                 exec overmind start -f Procfile.dev
               SH
 end
@@ -252,11 +277,4 @@ after_bundle do
       puts e.message
     end
   end
-
-  say
-  say "App successfully created!", :blue
-  say
-  say "To get started with your new app:", :green
-  say "  cd #{original_app_name}"
-  say "  bin/dev"
 end
